@@ -1,0 +1,135 @@
+! GOLD Parser Builder 2.0 Revision 6
+! Copyright (C) 2016 vu.nl, e3value.com
+! Redistribution and use in source and binary forms, with or without modification,
+! are permitted provided that the following conditions are met:
+!
+!    (1) Redistributions of source code must retain the above copyright
+!    notice, this list of conditions and the following disclaimer.
+!
+!    (2) Redistributions in binary form must reproduce the above copyright
+!    notice, this list of conditions and the following disclaimer in
+!    the documentation and/or other materials provided with the
+!    distribution.
+!
+!    (3)The name of the author may not be used to
+!    endorse or promote products derived from this software without
+!    specific prior written permission.
+!
+! THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+! WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+! MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+! EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+! EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+! OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+! IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+! OF SUCH DAMAGE.
+! 
+! This code contains third-party software, as in mentioned in the included
+! licenses.txt file.The third-party software is redistributed under their own
+! intellectual property rights. Other third-party software components may need
+! to be downloaded separately under their own intellectual property rights.
+! Please check and follow applicable third party intellectual
+! property conditions.
+
+"Name"    = 'e3 value formulas'
+"Author"  = 'Jaap Gordijn'
+"Version" = '1.00'
+"About"   = 'This is a simple example which shows how to define standard identifiers'
+
+{String Char} = {Printable} - ["] - ['#'] - ['{'] - ['}']
+!Look how can exclude '#' in the identifier below
+Identifier = {Letter}{Alphanumeric}*
+ObjectName = '"'{String Char}{String Char}*'"'
+ObjectId  = {Digit}+
+!StringLiteral = '"'{String Char}*'"'
+!IntegerLiteral = {Digit}+
+!FloatLiteral = {Digit}+'.'{Digit}+
+!PR = {Printable}
+
+"Case Sensitive" = 'True'
+"Start Symbol" = <AttributeReference>
+
+! Purpose is to translate any reference to a property to the normal form #object-id.property
+! So, we then can generate the Excel sheet by substituting #object-id.property by an Excel cell reference
+
+<AttributeReference> ::= e3 '{' Identifier '}'
+			| e3 '{' '#' ObjectId '.' Identifier '}'
+			| e3 '{' <SubLevelNavigation> '.' Identifier '}'
+			| e3 '{' <TopLevelNavigation> '.' Identifier '}'
+			| e3 '{' <TopLevelNavigation> '.' <SubLevelNavigation> '.' Identifier '}'
+			| e3 '{' <OntologyProperty> '}'
+			| e3 '{' '#' ObjectId '.' <OntologyProperty> '}'
+			| e3 '{' <SubLevelNavigation> '.' <OntologyProperty> '}'
+			| e3 '{' <TopLevelNavigation> '.' <OntologyProperty> '}'
+			| e3 '{' <TopLevelNavigation> '.'  <SubLevelNavigation> '.' <OntologyProperty> '}'
+
+<TopLevelNavigation> ::= <TopLevelNavigationFunction>
+
+<TopLevelNavigationFunction> ::= <TopLevelNavigationFunctionIdentifier> '(' ')'
+			| <TopLevelNavigationFunctionIdentifierU> '(' ObjectName ')'
+
+<TopLevelNavigationFunctionIdentifier> ::= Model
+
+<TopLevelNavigationFunctionIdentifierU> ::= MarketSegment
+			| ElementaryActor
+			| CompositeActor
+			| ValueObject
+			| ConnectionElement
+			| DependencyElement
+			| ValueInterface
+
+ 
+
+<SubLevelNavigation> ::= <SubLevelNavigationFunction>
+			| <SubLevelNavigation> '.' <SubLevelNavigationFunction> 
+
+<SubLevelNavigationFunction> ::= <SubLevelNavigationFunctionIdentifier> '(' ')'
+			| <SubLevelNavigationFunctionIdentifierU> '(' ObjectName ')'
+
+<SubLevelNavigationFunctionIdentifier> ::= ValueInterfaceAssignedToActor
+			| ValueInterfaceAssignedToMarketSegment
+			| ValueInterfaceAssignedToValueActivity
+			| ValuePortInValueOffering
+			| ValuePortRequestsOrOffersValueObject
+			| ValueOfferingInValueInterface
+			| ValueActivityPerformedByElementaryActor
+			| ValueTransferHasFirstValuePort
+			| ValueTransferHasSecondValuePort
+			| ValueTransferHasInPort
+			| ValueTransferHasOutPort
+			| ConnectionElementHasDownDependencyElement
+			| ConnectionElementHasUpDependencyElement
+			
+<SubLevelNavigationFunctionIdentifierU> ::=  ActorHasValueInterface 
+			| ActorInMarketSegment
+			| ElementaryActorPerformsValueActivity
+			| CompositeActorConsistsOfValueInterface
+			| ValueInterfaceConsistsOfOffering
+			| ValuePortFirstConnectsToValueTransfer
+			| ValuePortSecondConnectsToValueTransfer
+			| ValuePortInConnectsToValueTransfer
+			| ValuePortOutConnectsToValueTransfer
+			| ValueOfferingConsistsOfValuePort
+			| ValueActivityHasValueInterface
+			| MarketSegmentConsistsOfActor
+			| MarketSegmentHasValueInterface
+			| DependencyElementWithDownConnectionElement
+			| DependencyElementWithUpConnectionElement
+			| ValueTransactionConsistsOfValueTransfer
+			| ValueTransferInValueTransaction
+
+
+<OntologyProperty> ::= Formula !e3object
+			| Name !e3object
+			| UID !e3object
+			| UpFraction  !ConnectionElement
+			| DownFraction  !ConnectionElement
+!			| FirstFraction  !ConnectionElement
+!			| SecondFraction  !ConnectionElement
+!			| InFraction  !ConnectionElement
+!			| OutFraction  !ConnectionElement
+			| Direction !Port
+			| Valuation !Port and ValueTransfer
+      | Fraction !Transaction
