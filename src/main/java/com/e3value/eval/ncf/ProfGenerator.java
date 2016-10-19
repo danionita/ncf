@@ -146,7 +146,7 @@ public class ProfGenerator {
 
         Properties props = new Properties();
         try {
-            props.load(new FileInputStream("log4j.properties"));
+            props.load(ProfGenerator.class.getClassLoader().getResourceAsStream("log4j.properties"));
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
